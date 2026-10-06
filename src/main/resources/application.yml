@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: veterinaria-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/veterinaria_db}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 horas (86,400,000 ms)
+
+server:
+  port: ${PORT:8081}
+  error:
+    include-stacktrace: never
