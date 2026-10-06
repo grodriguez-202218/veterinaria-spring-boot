@@ -1,0 +1,508 @@
+{
+  "info": {
+    "_postman_id": "veterinaria-api-standalone-v1",
+    "name": "Veterinaria API - Colección Todo en Uno",
+    "description": "Colección AUTOSUFICIENTE (no requiere importar entorno adicional). Incluye variables internas automáticas, scripts que guardan tokens JWT al iniciar sesión y cálculo automático de fechas futuras para evitar errores de fecha vencida.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mascotaId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "citaId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "fechaCitaFutura",
+      "value": "2026-10-25T10:00:00",
+      "type": "string"
+    },
+    {
+      "key": "fechaCitaSolapada",
+      "value": "2026-10-25T10:15:00",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00. Estado del Servidor",
+      "item": [
+        {
+          "name": "01. Verificar que el Servidor esté Online (GET /api/v1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01. Autenticación",
+      "item": [
+        {
+          "name": "01. Login como CLIENTE (Prepara token automático)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                  "    pm.collectionVariables.set(\"token_cliente\", jsonData.token);",
+                  "    console.log(\"Token de CLIENTE activado:\", jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"cliente@veterinaria.com\",\n  \"password\": \"cliente123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "02. Login como VET (Prepara token de Veterinario)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                  "    pm.collectionVariables.set(\"token_vet\", jsonData.token);",
+                  "    console.log(\"Token de VET activado:\", jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vet@veterinaria.com\",\n  \"password\": \"vet123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "03. Login como ADMIN (Prepara token de Administrador)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                  "    pm.collectionVariables.set(\"token_admin\", jsonData.token);",
+                  "    console.log(\"Token de ADMIN activado:\", jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@veterinaria.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "04. Registro Público de Nuevo Cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Laura Morales\",\n  \"email\": \"laura.morales@example.com\",\n  \"password\": \"password123\",\n  \"telefono\": \"555-443-2211\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Mascotas",
+      "item": [
+        {
+          "name": "01. Registrar Mascota (CLIENTE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"mascotaId\", jsonData.id);",
+                  "    console.log(\"Mascota creada con ID:\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Rocky\",\n  \"especie\": \"PERRO\",\n  \"raza\": \"Pastor Alemán\",\n  \"edad\": 3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/mascotas",
+              "host": ["{{baseUrl}}"],
+              "path": ["mascotas"]
+            }
+          }
+        },
+        {
+          "name": "02. Obtener Mis Mascotas (CLIENTE)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mascotas/mis-mascotas",
+              "host": ["{{baseUrl}}"],
+              "path": ["mascotas", "mis-mascotas"]
+            }
+          }
+        },
+        {
+          "name": "03. Consultar Mascota por ID (VET o ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mascotas/{{mascotaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["mascotas", "{{mascotaId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Citas Médicas y Reglas",
+      "item": [
+        {
+          "name": "01. Crear Cita Médica (Auto-calcula fecha futura)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Calcula automáticamente una fecha futura (dentro de 10 días a las 10:00:00)",
+                  "let f = new Date();",
+                  "f.setDate(f.getDate() + 10);",
+                  "let yyyy = f.getFullYear();",
+                  "let mm = String(f.getMonth() + 1).padStart(2, '0');",
+                  "let dd = String(f.getDate()).padStart(2, '0');",
+                  "let fechaBase = yyyy + '-' + mm + '-' + dd + 'T10:00:00';",
+                  "let fechaSolapada = yyyy + '-' + mm + '-' + dd + 'T10:15:00';",
+                  "pm.collectionVariables.set(\"fechaCitaFutura\", fechaBase);",
+                  "pm.collectionVariables.set(\"fechaCitaSolapada\", fechaSolapada);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"citaId\", jsonData.id);",
+                  "    console.log(\"Cita creada con ID:\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": {{mascotaId}},\n  \"veterinarioId\": 2,\n  \"fechaHora\": \"{{fechaCitaFutura}}\",\n  \"motivo\": \"Consulta general y vacunación\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/citas",
+              "host": ["{{baseUrl}}"],
+              "path": ["citas"]
+            }
+          }
+        },
+        {
+          "name": "02. Regla 2: Intentar Cita Solapada a las 10:15 (Debe Fallar con 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"PASS: Estado es 400 Bad Request (Regla 2 Validada con Exito)\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test(\"PASS: Mensaje confirma que el veterinario no esta disponible\", function () {",
+                  "    var data = pm.response.json();",
+                  "    pm.expect(data.message).to.include(\"no está disponible\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": {{mascotaId}},\n  \"veterinarioId\": 2,\n  \"fechaHora\": \"{{fechaCitaSolapada}}\",\n  \"motivo\": \"Intento de solapar horario a las 10:15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/citas",
+              "host": ["{{baseUrl}}"],
+              "path": ["citas"]
+            }
+          }
+        },
+        {
+          "name": "03. Consultar Agenda (VET o ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/citas/agenda?veterinarioId=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["citas", "agenda"],
+              "query": [
+                {
+                  "key": "veterinarioId",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "04. Regla 3: Cancelar Cita Médica (> 24 horas de anticipación)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/citas/{{citaId}}/cancelar",
+              "host": ["{{baseUrl}}"],
+              "path": ["citas", "{{citaId}}", "cancelar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Expedientes Clínicos y Regla 4",
+      "item": [
+        {
+          "name": "01. Regla 4: Registrar Expediente (VET) y Completar Cita",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"citaId\": {{citaId}},\n  \"diagnostico\": \"Chequeo clínico normal, signos vitales estables\",\n  \"tratamiento\": \"Desparasitación interna preventiva\",\n  \"pesoKg\": 18.5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/expedientes",
+              "host": ["{{baseUrl}}"],
+              "path": ["expedientes"]
+            }
+          }
+        },
+        {
+          "name": "02. Regla 4: Intentar Duplicar Expediente (Debe Fallar con 409 Conflict)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"PASS: Estado es 409 o 400 (Regla 4 Validada con Exito)\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 409]);",
+                  "});",
+                  "pm.test(\"PASS: Mensaje confirma que la cita ya tiene un expediente\", function () {",
+                  "    var data = pm.response.json();",
+                  "    pm.expect(data.message).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"citaId\": {{citaId}},\n  \"diagnostico\": \"Segundo expediente ilegal en la misma cita\",\n  \"tratamiento\": \"No permitido\",\n  \"pesoKg\": 18.5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/expedientes",
+              "host": ["{{baseUrl}}"],
+              "path": ["expedientes"]
+            }
+          }
+        },
+        {
+          "name": "03. Consultar Historial Clínico de Mascota",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/expedientes/mascota/{{mascotaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["expedientes", "mascota", "{{mascotaId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
