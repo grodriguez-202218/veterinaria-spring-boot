@@ -21,14 +21,15 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         log.info("Verificando existencia de usuarios base del sistema...");
 
-        seedUser("admin@veterinaria.com", "Administrador Principal", "555-100-0001", "admin123", Rol.ADMIN);
+        seedUser("admin@veterinaria.com", "Administrador Principal", "555-100-0001", "Admin123*", Rol.ADMIN);
         seedUser("vet@veterinaria.com", "Dr. Roberto Gómez (Veterinario)", "555-200-0002", "vet123", Rol.VET);
-        seedUser("cliente@veterinaria.com", "Carlos Cliente Demo", "555-300-0003", "cliente123", Rol.CLIENTE);
+        seedUser("cliente@veterinaria.com", "Carlos Cliente Demo", "555-300-0003", "Cliente123*", Rol.CLIENTE);
     }
 
     private void seedUser(String email, String nombre, String telefono, String rawPassword, Rol rol) {
-        if (!usuarioRepository.existsByEmail(email)) {
-            Usuario usuario = Usuario.builder()
+        Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
+        if (usuario == null) {
+            usuario = Usuario.builder()
                     .nombre(nombre)
                     .email(email)
                     .telefono(telefono)
@@ -37,6 +38,10 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             usuarioRepository.save(usuario);
             log.info("Usuario inicial creado: email={}, rol={}", email, rol);
+        } else {
+            usuario.setPassword(passwordEncoder.encode(rawPassword));
+            usuarioRepository.save(usuario);
+            log.info("Usuario inicial actualizado: email={}, rol={}", email, rol);
         }
     }
 }
